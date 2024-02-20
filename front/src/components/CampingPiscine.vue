@@ -24,6 +24,10 @@ const chartOptions = ref({
     height: '100%',
     width: '100%',
   },
+   stroke: {
+    curve: 'smooth',
+    colors: ['#000000']
+  },
   responsive: [{
     breakpoint: 480,
     options: {
@@ -185,7 +189,6 @@ watch([selectedPeriode], ([periode]) => {
       Veuillez selectionner un bassin
     </div>
      <div class="flex justify-between items-center mx-5 lg:mx-20">
-      <span class="loading loading-spinner loading-lg"  v-if="bassinLoading"></span>
       <div v-if="!dataLoading && liveData" class="join mt-5">
         <input value='1h' class="join-item btn btn-xs lg:btn text-xs lg:text-lg" type="radio" name="options" aria-label="1h" key='1h' v-model="selectedPeriode" />
         <input value='24h' class="join-item btn btn-xs lg:btn text-xs lg:text-lg" type="radio" name="options" aria-label="24h" key='24h' v-model="selectedPeriode" />

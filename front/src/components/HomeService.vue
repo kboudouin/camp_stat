@@ -23,10 +23,10 @@ const piscinePath = route.path + '/piscine';
         </div>
       </router-link>
       <div class="btn bg-base-100 shadow-xl text-2xl w-64 h-64 flex items-center justify-center">
-        Eau
+        🚧 Eau 🚧
       </div>
       <div class="btn bg-base-100 shadow-xl text-2xl w-64 h-64 flex items-center justify-center">
-        Elec
+       🚧 Elec 🚧
       </div>
     </div>
   </div>
