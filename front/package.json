@@ -10,9 +10,11 @@
   },
   "dependencies": {
     "@heroicons/vue": "^2.1.1",
+    "apexcharts": "^3.46.0",
     "axios": "^1.6.7",
     "vue": "^3.4.15",
-    "vue-router": "^4.2.5"
+    "vue-router": "^4.2.5",
+    "vue3-apexcharts": "^1.5.2"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.0.3",
