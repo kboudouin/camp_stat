@@ -122,13 +122,16 @@ watch([selectedPeriode], ([periode]) => {
 </script>
 
 <template>
-  <div class="flex items-center m-2 lg:m-6">
+  <div class="flex justify-between items-center m-2 lg:m-6">
     <div class="lg:text-3xl breadcrumbs">
       <ul>
         <li class="font-bold"><RouterLink to="/">{{ toTitleCase($route.params.name) }}</RouterLink></li>
         <li class="font-bold"><RouterLink :to="'/camping/'+$route.params.name">Services</RouterLink></li>
         <li class="font-bold"><a>Piscine</a></li> 
       </ul>
+    </div>
+    <div>
+      <button class="btn btn-primary btn-xs lg:btn-primary lg:btn"><RouterLink :to="'/camping/'+$route.params.name+'/piscine/regulation'">Régulations</RouterLink></button>
     </div>
     </div>
     <div class="flex items-center justify-center">
