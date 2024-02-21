@@ -8,7 +8,7 @@ const bassins = ref([]);
 const bassinLoading = ref(true);
 const dataLoading = ref(false);
 const selectedBassin = ref(null);
-const selectedType = ref('chlore')
+const selectedType = ref('temp')
 const selectedPeriode = ref(null);
 const bassinData = ref(null);
 const liveData = ref(null);
@@ -28,6 +28,9 @@ const chartOptions = ref({
     curve: 'smooth',
     colors: ['#000000']
   },
+   animations: {
+        enabled: false,
+    },
   responsive: [{
     breakpoint: 480,
     options: {
@@ -38,6 +41,11 @@ const chartOptions = ref({
   }],
   xaxis: {
     type: "datetime",
+    labels: {
+      formatter: function(value, timestamp) {
+        return new Date(timestamp).toLocaleString('en-GB', { timeZone: 'Europe/Paris' });
+      }
+    }
   },
 });
 const chartSeries = ref([]);
@@ -57,6 +65,12 @@ watch([selectedBassin], async ([bassin]) => {
     liveData.value = response.data[0];
     const oldResponse = await axios.get(`http://fibre.larocheposay-vacances.com:3000/data/${bassin.id}`);
     bassinData.value = oldResponse.data;
+    const now = new Date();
+    const twentyFourHoursAgo = now.getTime() - 24 * 60 * 60 * 1000;
+    bassinData.value = oldResponse.data.filter(d => {
+      const dDate = new Date(convertDateToISO(d.date)).getTime();
+      return dDate >= twentyFourHoursAgo;
+    });
     oldData.value = oldResponse.data.find(d => {
       const oldDate = convertDate(d.date);
       const currentDate = convertDate(liveData.value.date);
@@ -118,7 +132,10 @@ watch([selectedPeriode], ([periode]) => {
       xaxis: {
         min: min,
         max: now
-      }
+      },
+       animations: {
+        enabled: false,
+    },
     });
   }
 }, { immediate: true });
