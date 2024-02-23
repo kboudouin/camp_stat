@@ -52,8 +52,8 @@ const chartSeries = ref([]);
 
 onMounted(async () => {
   bassinLoading.value = true;
-  const response = await axios.get('http://fibre.larocheposay-vacances.com:3000/bassins/');
-  bassins.value = response.data.filter(b => b.site === route.params.name);
+  const response = await axios.get(`http://fibre.larocheposay-vacances.com:3000/bassins/${route.params.name}`);
+  bassins.value = response.data
   bassinLoading.value = false;
 });
 
@@ -61,9 +61,9 @@ watch([selectedBassin], async ([bassin]) => {
   if (bassin) {
     const type = selectedType.value;
     dataLoading.value = true;
-    const response = await axios.get(`http://fibre.larocheposay-vacances.com:3000/live_data/${bassin.id}`);
+    const response = await axios.get(`http://fibre.larocheposay-vacances.com:3000/bassin_data/${bassin.bassin_id}/live`);
     liveData.value = response.data[0];
-    const oldResponse = await axios.get(`http://fibre.larocheposay-vacances.com:3000/data/${bassin.id}`);
+    const oldResponse = await axios.get(`http://fibre.larocheposay-vacances.com:3000/bassin_data/${bassin.bassin_id}`);
     bassinData.value = oldResponse.data;
     const now = new Date();
     const twentyFourHoursAgo = now.getTime() - 24 * 60 * 60 * 1000;
