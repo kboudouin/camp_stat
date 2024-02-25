@@ -1,14 +1,16 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import Home from './components/Home.vue';
-import CampingService from './components/HomeService.vue';
+import Dashboard from './components/Dashboard.vue';
 import CampingPiscine from './components/CampingPiscine.vue';
-import CampingPiscineRegulation from './components/CampingPiscineRegulation.vue';
+import CampingEau from './components/CampingEau.vue';
+import CampingElec from './components/CampingElec.vue';
+import CampingAnalyse from './components/CampingAnalyse.vue';
 
 const routes = [
-  { path: '/', component: Home },
-  { path: '/camping/:name', component: CampingService },
-  { path: '/camping/:name/piscine', component: CampingPiscine },
-  { path: '/camping/:name/piscine/regulation', component: CampingPiscineRegulation }
+  { path: '/', component: Dashboard },
+  { path: '/piscine', component: CampingPiscine },
+  { path: '/eau', component: CampingEau },
+  { path: '/elec', component: CampingElec },
+  { path: '/piscine/analyse', component: CampingAnalyse }
   
 ];
 

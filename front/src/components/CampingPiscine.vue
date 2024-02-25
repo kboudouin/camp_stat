@@ -6,6 +6,7 @@ import { toTitleCase, convertDate, convertDateToISO } from '../utils.js';
 
 const bassins = ref([]);
 const bassinLoading = ref(true);
+
 const dataLoading = ref(false);
 const selectedBassin = ref(null);
 const selectedType = ref('temp')
@@ -13,8 +14,8 @@ const selectedPeriode = ref(null);
 const bassinData = ref(null);
 const liveData = ref(null);
 const oldData = ref(null);
-const route = useRoute();
 const chart = ref(null);
+const selectedSite = ref(null);
 const setType = (type) => {
   selectedType.value = type;
 };
@@ -42,6 +43,7 @@ const chartOptions = ref({
   xaxis: {
     type: "datetime",
     labels: {
+      show: true,
       formatter: function(value, timestamp) {
         return new Date(timestamp).toLocaleString('en-GB', { timeZone: 'Europe/Paris' });
       }
@@ -52,7 +54,11 @@ const chartSeries = ref([]);
 
 onMounted(async () => {
   bassinLoading.value = true;
-  const response = await axios.get(`http://fibre.larocheposay-vacances.com:3000/bassins/${route.params.name}`);
+  const savedSite = localStorage.getItem('Site');
+  if (savedSite) {
+    selectedSite.value = JSON.parse(savedSite);
+  }
+  const response = await axios.get(`http://fibre.larocheposay-vacances.com:3000/bassins/${selectedSite.value.site_id}`);
   bassins.value = response.data
   bassinLoading.value = false;
 });
@@ -143,60 +149,45 @@ watch([selectedPeriode], ([periode]) => {
 </script>
 
 <template>
-  <div class="flex justify-between items-center m-2 lg:m-6">
-    <div class="lg:text-3xl breadcrumbs">
-      <ul>
-        <li class="font-bold"><RouterLink to="/">{{ toTitleCase($route.params.name) }}</RouterLink></li>
-        <li class="font-bold"><RouterLink :to="'/camping/'+$route.params.name">Services</RouterLink></li>
-        <li class="font-bold"><a>Piscine</a></li> 
-      </ul>
-    </div>
-    <div>
-      <button class="btn btn-primary btn-xs lg:btn-primary lg:btn"><RouterLink :to="'/camping/'+$route.params.name+'/piscine/regulation'">Régulations</RouterLink></button>
-    </div>
-    </div>
     <div class="flex items-center justify-center">
       <span class="loading loading-spinner loading-lg"  v-if="bassinLoading"></span>
       <div v-if="bassins && bassins.length > 0 && !bassinLoading" class="join">
-       <input :value='bassin' v-for="bassin in bassins" class="join-item btn btn-sm lg:btn-lg text-xs lg:text-2xl" type="radio" name="bassin" :aria-label="bassin.nom" :key='bassin.id' v-model="selectedBassin" />
+       <input :value='bassin' v-for="bassin in bassins" class="join-item btn btn-xs lg:btn text-xs lg:text-2xl" type="radio" name="bassin" :aria-label="bassin.nom" :key='bassin.id' v-model="selectedBassin" />
       </div>
        <div class="text-xl lg:text-3xl font-bold mt-10" v-if=" bassins.length == 0 && !bassinLoading">
         Désole, ce camping n'a pas de bassin!
       </div>
     </div>
     <div class="flex items-center justify-center mt-5" v-if="!dataLoading && liveData">
-      <div class="stats shadow">
-        <div class="stat place-items-center">
-          <div class="stat-title text-xs lg:text-2xl">Chlore</div>
-          <div class="stat-value text-sm lg:text-3xl">{{ liveData?.chlore }}</div>
-          <div class="stat-desc text-xs lg:text-xl">
+      <div class="stats">
+        <div @click="setType('chlore')" class="stat place-items-center" :class="{'bg-base-300': selectedType === 'chlore'}">
+          <div class="stat-title text-xs lg:text-lg">Chlore</div>
+          <div class="stat-value text-sm lg:text-xl">{{ liveData?.chlore }}</div>
+          <div class="stat-desc text-xs lg:text-lg">
             {{ (liveData.chlore - oldData?.chlore) > 0 ? '↗︎' : '↘︎' }} 
             {{ (liveData.chlore - oldData?.chlore).toFixed(2) }} 
             ({{ ((liveData.chlore - oldData?.chlore) / oldData?.chlore * 100).toFixed(1) }}%)
           </div>
-          <div @click="setType('chlore')" class="btn btn-xs lg:btn mt-2">voir</div>
         </div>
         
-        <div class="stat place-items-center">
-          <div class="stat-title text-xs lg:text-2xl">Ph</div>
-          <div class="stat-value text-sm lg:text-3xl" :class="{'text-error': liveData?.ph < 7}">{{ liveData?.ph }}</div>
-          <div class="stat-desc text-xs lg:text-xl" :class="{'text-error': liveData?.ph - oldData?.ph < 0}">
+        <div @click="setType('ph')" class="stat place-items-center" :class="{'bg-base-300': selectedType === 'ph'}">
+          <div class="stat-title text-xs lg:text-lg">Ph</div>
+          <div class="stat-value text-sm lg:text-xl" :class="{'text-error': liveData?.ph < 7}">{{ liveData?.ph }}</div>
+          <div class="stat-desc text-xs lg:text-lg" :class="{'text-error': liveData?.ph - oldData?.ph < 0}">
             {{ (liveData?.ph - oldData?.ph) > 0 ? '↗︎' : '↘︎' }} 
             {{ (liveData?.ph - oldData?.ph).toFixed(2) }} 
             ({{ ((liveData?.ph - oldData?.ph) / oldData?.ph * 100).toFixed(1) }}%)
           </div>
-           <div @click="setType('ph')" class="btn btn-xs lg:btn mt-2">voir</div>
         </div>
         
-        <div class="stat place-items-center">
-          <div class="stat-title text-xs lg:text-2xl">Temp</div>
-          <div class="stat-value text-sm lg:text-3xl">{{ liveData?.temp }}°C</div>
-          <div class="stat-desc text-xs lg:text-xl">
+        <div @click="setType('temp')" class="stat place-items-center" :class="{'bg-base-300': selectedType === 'temp'}">
+          <div class="stat-title text-xs lg:text-lg">Temp</div>
+          <div class="stat-value text-sm lg:text-xl">{{ liveData?.temp }}°C</div>
+          <div class="stat-desc text-xs lg:text-lg">
             {{ (liveData?.temp - oldData?.temp) > 0 ? '↗︎' : '↘︎' }} 
             {{ (liveData?.temp - oldData?.temp).toFixed(2) }}°C 
             ({{ ((liveData?.temp - oldData?.temp) / oldData?.temp * 100).toFixed(1) }}%)
           </div>
-          <div @click="setType('temp')" class="btn btn-xs lg:btn mt-2">voir</div>
         </div>
         
       </div>
