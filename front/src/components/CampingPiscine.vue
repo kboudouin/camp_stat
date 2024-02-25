@@ -16,6 +16,12 @@ const liveData = ref(null);
 const oldData = ref(null);
 const chart = ref(null);
 const selectedSite = ref(null);
+
+let strokeColor = '#000000';
+if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+  strokeColor = '#ffffff';
+}
+
 const setType = (type) => {
   selectedType.value = type;
 };
@@ -27,7 +33,8 @@ const chartOptions = ref({
   },
    stroke: {
     curve: 'smooth',
-    colors: ['#000000']
+    colors: [strokeColor],
+    width: 2 
   },
    animations: {
         enabled: false,
@@ -45,8 +52,14 @@ const chartOptions = ref({
     labels: {
       show: true,
       formatter: function(value, timestamp) {
-        return new Date(timestamp).toLocaleString('en-GB', { timeZone: 'Europe/Paris' });
+        let date = new Date(timestamp);
+        return date.toLocaleDateString('en-GB', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Paris' });
       }
+    }
+  },
+  tooltip: {
+    x: {
+      format: 'dd MMM HH:mm'
     }
   },
 });
