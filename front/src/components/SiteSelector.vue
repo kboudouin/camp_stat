@@ -17,10 +17,10 @@ onMounted(async () => {
     selectedSite.value = sites.value[0];
   }
 });
-
 watch(selectedSite, (newSite) => {
-  if (newSite) {
+  if (newSite && JSON.stringify(newSite) !== localStorage.getItem('Site')) {
     localStorage.setItem('Site', JSON.stringify(newSite));
+    window.location.reload();
   }
 });
 </script>

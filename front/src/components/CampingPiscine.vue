@@ -1,6 +1,5 @@
 <script setup>
 import { ref, onMounted, watch } from 'vue';
-import { useRoute } from 'vue-router';
 import axios from 'axios';
 import { toTitleCase, convertDate, convertDateToISO } from '../utils.js';
 
@@ -10,14 +9,16 @@ const bassinLoading = ref(true);
 const dataLoading = ref(false);
 const selectedBassin = ref(null);
 const selectedType = ref('temp')
-const selectedPeriode = ref(null);
+const selectedPeriode = ref('24h');
 const bassinData = ref(null);
 const liveData = ref(null);
 const oldData = ref(null);
 const chart = ref(null);
-const selectedSite = ref(null);
+const chartSeries = ref([]);
+const savedSite = ref(JSON.parse(localStorage.getItem('Site')));
 
 let strokeColor = '#000000';
+
 if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
   strokeColor = '#ffffff';
 }
@@ -25,6 +26,13 @@ if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').match
 const setType = (type) => {
   selectedType.value = type;
 };
+const setPeriode = (periode) => {
+  selectedPeriode.value = periode;
+};
+const setBassin = (bassin) => {
+  selectedBassin.value = bassin;
+};
+
 const chartOptions = ref({
   chart: {
     type: "line",
@@ -36,9 +44,6 @@ const chartOptions = ref({
     colors: [strokeColor],
     width: 2 
   },
-   animations: {
-        enabled: false,
-    },
   responsive: [{
     breakpoint: 480,
     options: {
@@ -63,16 +68,12 @@ const chartOptions = ref({
     }
   },
 });
-const chartSeries = ref([]);
 
 onMounted(async () => {
   bassinLoading.value = true;
-  const savedSite = localStorage.getItem('Site');
-  if (savedSite) {
-    selectedSite.value = JSON.parse(savedSite);
-  }
-  const response = await axios.get(`http://fibre.larocheposay-vacances.com:3000/bassins/${selectedSite.value.site_id}`);
+  const response = await axios.get(`http://fibre.larocheposay-vacances.com:3000/bassins/${savedSite.value.site_id}`);
   bassins.value = response.data
+  setBassin(bassins.value[0]);
   bassinLoading.value = false;
 });
 
@@ -124,48 +125,13 @@ if (bassinData.value && type) {
 }
 }, { immediate: true });
 
-watch([selectedPeriode], ([periode]) => {
-  if (periode) {
-    const now = new Date().getTime();
-    let min;
-    switch(periode) {
-      case '1h':
-        min = now - 60 * 60 * 1000;
-        break;
-      case '24h':
-        min = now - 24 * 60 * 60 * 1000;
-        break;
-      case '7j':
-        min = now - 7 * 24 * 60 * 60 * 1000;
-        break;
-      case '30j':
-        min = now - 30 * 24 * 60 * 60 * 1000;
-        break;
-    }
-    chartOptions.value.xaxis = {
-      type: "datetime",
-      min: min,
-      max: now
-    };
-    chart.value.updateOptions({
-      xaxis: {
-        min: min,
-        max: now
-      },
-       animations: {
-        enabled: false,
-    },
-    });
-  }
-}, { immediate: true });
-
 </script>
 
 <template>
     <div class="flex items-center justify-center">
       <span class="loading loading-spinner loading-lg"  v-if="bassinLoading"></span>
       <div v-if="bassins && bassins.length > 0 && !bassinLoading" class="join">
-       <input :value='bassin' v-for="bassin in bassins" class="join-item btn btn-xs lg:btn text-xs lg:text-2xl" type="radio" name="bassin" :aria-label="bassin.nom" :key='bassin.id' v-model="selectedBassin" />
+       <button v-for="bassin in bassins" @click="setBassin(bassin)" class="join-item btn btn-xs lg:btn text-xs lg:text-2xl"  :class="{'btn-primary lg:btn-primary': selectedBassin === bassin}" name="bassin" :key='bassin.id'>{{ bassin.nom }}</button>
       </div>
        <div class="text-xl lg:text-3xl font-bold mt-10" v-if=" bassins.length == 0 && !bassinLoading">
         Désole, ce camping n'a pas de bassin!
@@ -211,10 +177,10 @@ watch([selectedPeriode], ([periode]) => {
     </div>
      <div class="flex justify-between items-center mx-5 lg:mx-20">
       <div v-if="!dataLoading && liveData" class="join mt-5">
-        <input value='1h' class="join-item btn btn-xs lg:btn text-xs lg:text-lg" type="radio" name="options" aria-label="1h" key='1h' v-model="selectedPeriode" />
-        <input value='24h' class="join-item btn btn-xs lg:btn text-xs lg:text-lg" type="radio" name="options" aria-label="24h" key='24h' v-model="selectedPeriode" />
-        <input value='7j' class="join-item btn btn-xs lg:btn text-xs lg:text-lg" type="radio" name="options" aria-label="7j" key='7j' v-model="selectedPeriode" />
-        <input value='30j' class="join-item btn btn-xs lg:btn text-xs lg:text-lg" type="radio" name="options" aria-label="30j" key='30j' v-model="selectedPeriode" />
+        <button @click="setPeriode('1h')" class="btn btn-xs lg:btn join-item"  :class="{'lg:btn-primary btn-primary': selectedPeriode === '1h'}">1h</button>
+        <button @click="setPeriode('24h')" class="btn btn-xs lg:btn join-item"  :class="{'lg:btn-primary btn-primary': selectedPeriode === '24h'}">24h</button>
+        <button @click="setPeriode('7j')" class="btn btn-xs lg:btn join-item"  :class="{'lg:btn-primary btn-primary': selectedPeriode === '7j'}">7j</button>
+        <button @click="setPeriode('30j')" class="btn btn-xs lg:btn join-item"  :class="{'lg:btn-primary btn-primary': selectedPeriode === '30j'}">30j</button>
       </div>
 
       <div v-if="!dataLoading && liveData" class="join mt-5">
